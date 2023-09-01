@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        background-color: black;
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+      }
+
+      main {
+        position: relative;
+      }
+
+      main > * {
+        position: absolute;
+        transform: translate(-50%, -50%);
+      }
+
+      .hidden {
+        opacity: 0; /*faster than display none*/
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <video muted>
+        <source src="/assets/FoK4FIwXoAERu4p.mp4" type="video/mp4" />
+      </video>
+      <video muted>
+        <source src="/assets/FoK6YxOXEAEX7NP.mp4" type="video/mp4" />
+      </video>
+      <video muted>
+        <source src="/assets/FxVsTFmaEAEqiEp.mp4" type="video/mp4" />
+      </video>
+    </main>
+    <script>
+      const vids = Array.from(document.querySelectorAll("main video"));
+
+      vids.forEach((vid, i) => {
+        vid.classList.add("hidden");
+        vid.addEventListener("ended", () => {
+          if (i == vids.length - 1) {
+            playVid(vids[0]);
+          } else {
+            playVid(vids[i + 1]);
+          }
+          vids[i].classList.add("hidden");
+        });
+      });
+
+      playVid(vids[0]);
+
+      window.addEventListener("keydown", (event) => {
+        if (event.keyCode === 69) {
+          return;
+        }
+      });
+
+      function playVid(vid) {
+        vid.classList.remove("hidden");
+        vid.play();
+      }
+    </script>
+  </body>
+</html>
