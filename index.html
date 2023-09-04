@@ -81,74 +81,100 @@
     </style>
   </head>
   <body>
-    <main>
-      <video muted>
-        <source src="/assets/FoK4FIwXoAERu4p.mp4" type="video/mp4" />
-      </video>
-      <video muted>
-        <source src="/assets/FoK6YxOXEAEX7NP.mp4" type="video/mp4" />
-      </video>
-      <video muted>
-        <source src="/assets/FxVsTFmaEAEqiEp.mp4" type="video/mp4" />
-      </video>
-    </main>
+    <main></main>
     <div id="asker" class="slidable">
-      <progress id="timeout" max="100" value="50"></progress>
+      <progress id="timeout" max="100" value="0"></progress>
       <div id="choices">
         <div>
-          <button>A</button>
+          <button class="answer-btn" data-answer="a">A</button>
           <label>: je tourne a gauche</label>
         </div>
         <div>
-          <button>B</button> <label>: je passe le joint au gosse</label>
+          <button class="answer-btn" data-answer="b">B</button>
+          <label>: je passe le joint au gosse</label>
         </div>
         <div>
-          <button>C</button>
+          <button class="answer-btn" data-answer="c">C</button>
           <label for="">: je m'en fout je prend le volant quand meme</label>
         </div>
-        <div><button>D</button> <label for="">: je force la prio</label></div>
+        <div>
+          <button class="answer-btn" data-answer="d">D</button>
+          <label for="">: je force la prio</label>
+        </div>
       </div>
     </div>
-    <script type="module">
+    <script>
       const vids = Array.from(document.querySelectorAll("main video"));
+      const btns = Array.from(document.querySelectorAll(".answer-btn"));
+      let currentVidSrc = null;
       let progressEndedCallbacks = {};
+      let progressTicking = false;
+
+      console.log(btns);
+      console.log(progressEndedCallbacks);
 
       // setProgressColor("#F00");
       // setInterval(() => {
       //   showAsker();
       //   setTimeout(() => hideAsker(), 1000);
       // }, 2000);
-      startProgress(5000);
 
       // addProgressEndedCallback(() => console.log("hola"));
       // addProgressEndedCallback(() => console.log("hello"));
       // addProgressEndedCallback(() => console.log("sup ma boi"));
 
-      console.log(progressEndedCallbacks);
-
-      vids.forEach((vid, i) => {
-        vid.classList.add("hidden");
-        vid.addEventListener("ended", () => {
-          if (i == vids.length - 1) {
-            playVid(vids[0]);
-          } else {
-            playVid(vids[i + 1]);
-          }
-          vids[i].classList.add("hidden");
-        });
-      });
-
-      playVid(vids[0]);
-
       window.addEventListener("keydown", (event) => {
-        if (event.keyCode === 69) {
-          return;
+        const answers = btns.map((btn) => btn.dataset["answer"]);
+        const letterPressed = event.key.toLowerCase();
+
+        if (answers.includes(letterPressed)) {
+          answer(letterPressed);
         }
       });
 
-      function playVid(vid) {
-        vid.classList.remove("hidden");
-        vid.play();
+      btns.forEach((btn) => {
+        btn.addEventListener("click", () => answer(btn.dataset["answer"]));
+      });
+
+      function registerVid(vidSrc) {
+        let newVid = document.createElement("video");
+        newVid.src = vidSrc;
+        newVid.classList.add("hidden");
+        document.querySelector("main").appendChild(newVid);
+
+        newVid.addEventListener("ended", () => {
+          if (typeof onVideoEnded === "function") {
+            onVideoEnded(vidSrc);
+          }
+        });
+
+        if (!currentVidSrc) {
+          currentVidSrc = vidSrc;
+        }
+      }
+
+      function answer(answerKey) {
+        // TODO : style the buttons for feedback
+
+        if (typeof onAnswer === "function") {
+          onAnswer(answerKey);
+        }
+      }
+
+      function playVid(vidSrc) {
+        const currentVid = document.querySelector(
+          `video[src="${currentVidSrc}"]`
+        );
+        const newVid = document.querySelector(`video[src="${vidSrc}"]`);
+        // FIXME : check that both aren't undefined
+
+        currentVid.classList.add("hidden");
+        newVid.classList.remove("hidden");
+
+        currentVid.pause();
+        currentVid.currentTime = 0;
+        newVid.play();
+        currentVidSrc = vidSrc;
       }
 
       function getProgressEl() {
@@ -162,6 +188,7 @@
       function startProgress(totalTime) {
         let startTime;
         const progressEl = getProgressEl();
+        progressTicking = true;
 
         requestAnimationFrame(progress);
 
@@ -171,20 +198,31 @@
           }
           const elapsed = timeStamp - startTime;
 
-          progressEl.value = (elapsed / totalTime) * 100;
-
-          if (elapsed < totalTime) {
+          if (progressTicking && elapsed < totalTime) {
+            progressEl.value = (elapsed / totalTime) * 100;
             requestAnimationFrame(progress);
-          } else {
+          } else if (progressTicking) {
+            progressTicking = false;
             progressEl.value = 0;
             execProgressEndedCallbacks();
+            if (typeof onProgressEnded === "function") {
+              onProgressEnded();
+            }
           }
         }
+      }
+
+      function cancelProgress() {
+        const progressEl = getProgressEl();
+        progressTicking = false;
+        progressEl.value = 0;
       }
 
       function setProgressColor(color) {
         const progressEl = getProgressEl();
 
+        // TODO : make a separate stylesheet at runtime with a title only for this
+        // instead of doing a shitty nested loop
         for (let stylesheet of document.styleSheets) {
           for (let rule of stylesheet.cssRules) {
             if (
@@ -197,12 +235,14 @@
         }
       }
 
+      // private
       function execProgressEndedCallbacks() {
         Object.values(progressEndedCallbacks).forEach((cb) => {
           cb();
         });
       }
 
+      // optionnal
       function addProgressEndedCallback(callback) {
         let newId;
 
@@ -214,6 +254,7 @@
         return newId;
       }
 
+      // optionnal
       function removeProgressEndedCallback(callbackId) {
         delete progressEndedCallbacks[callbackId];
       }
@@ -228,5 +269,6 @@
         asker.classList.add("slid-down");
       }
     </script>
+    <script src="userScript.js"></script>
   </body>
 </html>
