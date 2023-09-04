@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+<!-- 
+  TODOs
+  - callback for answering question
+  - styling the answer button
+
+  - export as module?
+ -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,6 +13,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
+      /* Reset and tweak default appearance */
+      progress[value] {
+        position: absolute;
+        top: 0;
+        -webkit-appearance: none;
+        appearance: none;
+        background-color: transparent;
+        height: 4px;
+        translate: 0 -4px;
+        border: 0;
+        vertical-align: 0;
+      }
+      ::-webkit-progress-bar {
+        background-color: transparent;
+      }
+      ::-moz-progress-bar {
+        background-color: orange;
+      }
+      ::-webkit-progress-value {
+        background-color: orange;
+      }
+
       body {
         margin: 0;
         background-color: black;
@@ -23,8 +52,31 @@
         transform: translate(-50%, -50%);
       }
 
+      #asker {
+        position: fixed;
+        bottom: 0;
+        background-color: white;
+        width: 100%;
+      }
+      #asker > progress {
+        width: 100%;
+      }
+      #asker > #choices {
+        display: flex;
+        justify-content: space-evenly;
+
+        margin: 1rem;
+      }
+
       .hidden {
         opacity: 0; /*faster than display none*/
+      }
+
+      .slidable {
+        transition: translate 0.2s ease-out;
+      }
+      .slid-down {
+        translate: 0 100%;
       }
     </style>
   </head>
@@ -40,8 +92,39 @@
         <source src="/assets/FxVsTFmaEAEqiEp.mp4" type="video/mp4" />
       </video>
     </main>
-    <script>
+    <div id="asker" class="slidable">
+      <progress id="timeout" max="100" value="50"></progress>
+      <div id="choices">
+        <div>
+          <button>A</button>
+          <label>: je tourne a gauche</label>
+        </div>
+        <div>
+          <button>B</button> <label>: je passe le joint au gosse</label>
+        </div>
+        <div>
+          <button>C</button>
+          <label for="">: je m'en fout je prend le volant quand meme</label>
+        </div>
+        <div><button>D</button> <label for="">: je force la prio</label></div>
+      </div>
+    </div>
+    <script type="module">
       const vids = Array.from(document.querySelectorAll("main video"));
+      let progressEndedCallbacks = {};
+
+      // setProgressColor("#F00");
+      // setInterval(() => {
+      //   showAsker();
+      //   setTimeout(() => hideAsker(), 1000);
+      // }, 2000);
+      startProgress(5000);
+
+      // addProgressEndedCallback(() => console.log("hola"));
+      // addProgressEndedCallback(() => console.log("hello"));
+      // addProgressEndedCallback(() => console.log("sup ma boi"));
+
+      console.log(progressEndedCallbacks);
 
       vids.forEach((vid, i) => {
         vid.classList.add("hidden");
@@ -66,6 +149,83 @@
       function playVid(vid) {
         vid.classList.remove("hidden");
         vid.play();
+      }
+
+      function getProgressEl() {
+        return document.querySelector("progress");
+      }
+
+      function getAsker() {
+        return document.querySelector("#asker");
+      }
+
+      function startProgress(totalTime) {
+        let startTime;
+        const progressEl = getProgressEl();
+
+        requestAnimationFrame(progress);
+
+        function progress(timeStamp) {
+          if (startTime === undefined) {
+            startTime = timeStamp;
+          }
+          const elapsed = timeStamp - startTime;
+
+          progressEl.value = (elapsed / totalTime) * 100;
+
+          if (elapsed < totalTime) {
+            requestAnimationFrame(progress);
+          } else {
+            progressEl.value = 0;
+            execProgressEndedCallbacks();
+          }
+        }
+      }
+
+      function setProgressColor(color) {
+        const progressEl = getProgressEl();
+
+        for (let stylesheet of document.styleSheets) {
+          for (let rule of stylesheet.cssRules) {
+            if (
+              rule.selectorText.includes("::-moz-progress-bar") ||
+              rule.selectorText.includes("::-webkit-progress-value")
+            ) {
+              rule.style["background-color"] = color;
+            }
+          }
+        }
+      }
+
+      function execProgressEndedCallbacks() {
+        Object.values(progressEndedCallbacks).forEach((cb) => {
+          cb();
+        });
+      }
+
+      function addProgressEndedCallback(callback) {
+        let newId;
+
+        do {
+          newId = crypto.randomUUID();
+        } while (progressEndedCallbacks.newId);
+
+        progressEndedCallbacks[newId] = callback;
+        return newId;
+      }
+
+      function removeProgressEndedCallback(callbackId) {
+        delete progressEndedCallbacks[callbackId];
+      }
+
+      function showAsker() {
+        const asker = getAsker();
+        asker.classList.remove("slid-down");
+      }
+
+      function hideAsker() {
+        const asker = getAsker();
+        asker.classList.add("slid-down");
       }
     </script>
   </body>
