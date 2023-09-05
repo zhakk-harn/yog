@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <!-- 
   TODOs
-  - callback for answering question
   - styling the answer button
 
   - export as module?
@@ -81,28 +80,21 @@
     </style>
   </head>
   <body>
-    <main></main>
+    <main>
+      <!-- vids go here -->
+    </main>
     <div id="asker" class="slidable slid-down">
       <progress id="timeout" max="100" value="0"></progress>
       <div id="choices">
-        <div>
-          <button class="answer-btn" data-answer="a">A</button>
-          <label>: je tourne a gauche</label>
-        </div>
-        <div>
-          <button class="answer-btn" data-answer="b">B</button>
-          <label>: je passe le joint au gosse</label>
-        </div>
-        <div>
-          <button class="answer-btn" data-answer="c">C</button>
-          <label for="">: je m'en fout je prend le volant quand meme</label>
-        </div>
-        <div>
-          <button class="answer-btn" data-answer="d">D</button>
-          <label for="">: je force la prio</label>
-        </div>
+        <!-- choices go here -->
       </div>
     </div>
+    <template id="question-template">
+      <div>
+        <button class="answer-btn" data-answer="">C</button>
+        <label for=""></label>
+      </div>
+    </template>
     <script>
       const vids = Array.from(document.querySelectorAll("main video"));
       const btns = Array.from(document.querySelectorAll(".answer-btn"));
@@ -130,10 +122,6 @@
         if (answers.includes(letterPressed)) {
           answer(letterPressed);
         }
-      });
-
-      btns.forEach((btn) => {
-        btn.addEventListener("click", () => answer(btn.dataset["answer"]));
       });
 
       function registerVid(vidSrc) {
@@ -221,8 +209,8 @@
       function setProgressColor(color) {
         const progressEl = getProgressEl();
 
-        // TODO : make a separate stylesheet at runtime with a title only for this
-        // instead of doing a shitty nested loop
+        // TODO : make a separate stylesheet at runtime with a title, only for this
+        // instead of doing a shitty nested loop running over all the styles
         for (let stylesheet of document.styleSheets) {
           for (let rule of stylesheet.cssRules) {
             if (
@@ -267,6 +255,50 @@
       function hideAsker() {
         const asker = getAsker();
         asker.classList.add("slid-down");
+      }
+
+      function addQuestion(answerKey, answerLabel) {
+        if (typeof answerKey !== "string" || !answerKey.match(/^[a-zA-Z]$/i)) {
+          throw (
+            "when adding a question you must provide a single letter as the answer key\nyou provided: " +
+            answerKey
+          );
+        }
+
+        const templateQuestion = document.querySelector("#question-template");
+        const newQuestion =
+          templateQuestion.content.firstElementChild.cloneNode(true);
+        newQuestion.querySelector("label").innerText = answerLabel;
+
+        const btn = newQuestion.querySelector("button");
+        btn.dataset["answer"] = answerKey;
+        btn.innerText = answerKey.toUpperCase();
+        btn.addEventListener("click", () => answer(btn.dataset["answer"]));
+
+        document.querySelector("#choices").appendChild(newQuestion);
+      }
+
+      function removeQuestion(answerKey) {
+        const container = document.querySelector("#choices");
+        Array.from(container.children).forEach((child) => {
+          if (child.querySelector(`button[data-answer=${answerKey}]`)) {
+            child.remove();
+          }
+        });
+      }
+
+      function removeQuestionWithLabel(answerLabel) {
+        const container = document.querySelector("#choices");
+        Array.from(container.children).forEach((child) => {
+          if (child.querySelector("label").innerText.includes(answerLabel)) {
+            child.remove();
+          }
+        });
+      }
+
+      function clearQuestions() {
+        const container = document.querySelector("#choices");
+        Array.from(container.children).forEach((child) => child.remove());
       }
     </script>
     <script src="userScript.js"></script>
