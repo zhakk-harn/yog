@@ -1,3 +1,5 @@
+let lattestAnswer = null;
+
 hideAsker();
 
 // registerVid(vidSrc)
@@ -14,26 +16,29 @@ playVid("/assets/FxVsTFmaEAEqiEp.mp4");
 // answerKey is always lowercase
 function onAnswer(answerKey) {
   hideAsker();
-  cancelProgress();
 
-  if (answerKey == "a") {
-    playVid("/assets/FxVsTFmaEAEqiEp.mp4");
-  }
-
-  if (answerKey == "b") {
-    playVid("/assets/FoK4FIwXoAERu4p.mp4");
-  }
-
-  if (answerKey == "c") {
-    playVid("/assets/FoK6YxOXEAEX7NP.mp4");
-  }
+  lattestAnswer = answerKey;
 }
 
-function onVideoEnded(_vidSrc) {
-  showAsker();
-  startProgress(5000); // 5000ms
+async function onVideoEnded(_vidSrc) {
+  await wait(1000);
 
-  playVid("/assets/FoK6YxOXEAEX7NP.mp4");
+  showAsker();
+  startProgress(2000); // 5000ms
+
+  if (lattestAnswer) {
+    if (lattestAnswer == "a") {
+      playVid("/assets/FxVsTFmaEAEqiEp.mp4");
+    }
+
+    if (lattestAnswer == "b") {
+      playVid("/assets/FoK4FIwXoAERu4p.mp4");
+    }
+
+    if (lattestAnswer == "c") {
+      playVid("/assets/FoK6YxOXEAEX7NP.mp4");
+    }
+  }
 }
 
 function onProgressEnded() {

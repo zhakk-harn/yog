@@ -3,19 +3,6 @@ let currentVidSrc = null;
 let progressEndedCallbacks = {};
 let progressTicking = false;
 
-console.log(btns);
-console.log(progressEndedCallbacks);
-
-// setProgressColor("#F00");
-// setInterval(() => {
-//   showAsker();
-//   setTimeout(() => hideAsker(), 1000);
-// }, 2000);
-
-// addProgressEndedCallback(() => console.log("hola"));
-// addProgressEndedCallback(() => console.log("hello"));
-// addProgressEndedCallback(() => console.log("sup ma boi"));
-
 window.addEventListener("keydown", (event) => {
   const answers = btns.map((btn) => btn.dataset["answer"]);
   const letterPressed = event.key.toLowerCase();
@@ -43,8 +30,6 @@ function registerVid(vidSrc) {
 }
 
 function answer(answerKey) {
-  // TODO : style the buttons for feedback
-
   if (typeof onAnswer === "function") {
     onAnswer(answerKey);
   }
@@ -53,7 +38,10 @@ function answer(answerKey) {
 function playVid(vidSrc) {
   const currentVid = document.querySelector(`video[src="${currentVidSrc}"]`);
   const newVid = document.querySelector(`video[src="${vidSrc}"]`);
-  // FIXME : check that both aren't undefined
+
+  if (!newVid) {
+    throw `${vidSrc} is a video which dosen't exist. Did you register it with registerVid()?`;
+  }
 
   currentVid.classList.add("hidden");
   newVid.classList.remove("hidden");
@@ -106,8 +94,6 @@ function cancelProgress() {
 }
 
 function setProgressColor(color) {
-  const progressEl = getProgressEl();
-
   // TODO : make a separate stylesheet at runtime with a title, only for this
   // instead of doing a shitty nested loop running over all the styles
   for (let stylesheet of document.styleSheets) {
@@ -198,4 +184,12 @@ function clearQuestions() {
 function showAsker() {
   const asker = getAsker();
   asker.classList.remove("slid-down");
+}
+
+function wait(time) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, time);
+  });
 }
