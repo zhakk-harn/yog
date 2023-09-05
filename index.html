@@ -1,10 +1,4 @@
 <!DOCTYPE html>
-<!-- 
-  TODOs
-  - styling the answer button
-
-  - export as module?
- -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -34,12 +28,37 @@
         background-color: orange;
       }
 
+      /* reset */
+      button {
+        background-color: transparent;
+        border-width: 0;
+        font-family: inherit;
+        font-size: inherit;
+        font-style: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+        padding: 0;
+      }
+      /* new styles */
+      button {
+        border: 3px solid black;
+        min-width: 3rem;
+        min-height: 3rem;
+        cursor: pointer;
+        margin-right: 0.5rem;
+        font-weight: bold;
+      }
+      button:focus {
+        background: #dbdbdb;
+      }
+
       body {
         margin: 0;
         background-color: black;
         display: grid;
         place-items: center;
         min-height: 100vh;
+        font-family: system-ui, sans-serif;
       }
 
       main {
@@ -95,212 +114,7 @@
         <label for=""></label>
       </div>
     </template>
-    <script>
-      const vids = Array.from(document.querySelectorAll("main video"));
-      const btns = Array.from(document.querySelectorAll(".answer-btn"));
-      let currentVidSrc = null;
-      let progressEndedCallbacks = {};
-      let progressTicking = false;
-
-      console.log(btns);
-      console.log(progressEndedCallbacks);
-
-      // setProgressColor("#F00");
-      // setInterval(() => {
-      //   showAsker();
-      //   setTimeout(() => hideAsker(), 1000);
-      // }, 2000);
-
-      // addProgressEndedCallback(() => console.log("hola"));
-      // addProgressEndedCallback(() => console.log("hello"));
-      // addProgressEndedCallback(() => console.log("sup ma boi"));
-
-      window.addEventListener("keydown", (event) => {
-        const answers = btns.map((btn) => btn.dataset["answer"]);
-        const letterPressed = event.key.toLowerCase();
-
-        if (answers.includes(letterPressed)) {
-          answer(letterPressed);
-        }
-      });
-
-      function registerVid(vidSrc) {
-        let newVid = document.createElement("video");
-        newVid.src = vidSrc;
-        newVid.classList.add("hidden");
-        document.querySelector("main").appendChild(newVid);
-
-        newVid.addEventListener("ended", () => {
-          if (typeof onVideoEnded === "function") {
-            onVideoEnded(vidSrc);
-          }
-        });
-
-        if (!currentVidSrc) {
-          currentVidSrc = vidSrc;
-        }
-      }
-
-      function answer(answerKey) {
-        // TODO : style the buttons for feedback
-
-        if (typeof onAnswer === "function") {
-          onAnswer(answerKey);
-        }
-      }
-
-      function playVid(vidSrc) {
-        const currentVid = document.querySelector(
-          `video[src="${currentVidSrc}"]`
-        );
-        const newVid = document.querySelector(`video[src="${vidSrc}"]`);
-        // FIXME : check that both aren't undefined
-
-        currentVid.classList.add("hidden");
-        newVid.classList.remove("hidden");
-
-        currentVid.pause();
-        currentVid.currentTime = 0;
-        newVid.play();
-        currentVidSrc = vidSrc;
-      }
-
-      function getProgressEl() {
-        return document.querySelector("progress");
-      }
-
-      function getAsker() {
-        return document.querySelector("#asker");
-      }
-
-      function startProgress(totalTime) {
-        let startTime;
-        const progressEl = getProgressEl();
-        progressTicking = true;
-
-        requestAnimationFrame(progress);
-
-        function progress(timeStamp) {
-          if (startTime === undefined) {
-            startTime = timeStamp;
-          }
-          const elapsed = timeStamp - startTime;
-
-          if (progressTicking && elapsed < totalTime) {
-            progressEl.value = (elapsed / totalTime) * 100;
-            requestAnimationFrame(progress);
-          } else if (progressTicking) {
-            progressTicking = false;
-            progressEl.value = 0;
-            execProgressEndedCallbacks();
-            if (typeof onProgressEnded === "function") {
-              onProgressEnded();
-            }
-          }
-        }
-      }
-
-      function cancelProgress() {
-        const progressEl = getProgressEl();
-        progressTicking = false;
-        progressEl.value = 0;
-      }
-
-      function setProgressColor(color) {
-        const progressEl = getProgressEl();
-
-        // TODO : make a separate stylesheet at runtime with a title, only for this
-        // instead of doing a shitty nested loop running over all the styles
-        for (let stylesheet of document.styleSheets) {
-          for (let rule of stylesheet.cssRules) {
-            if (
-              rule.selectorText.includes("::-moz-progress-bar") ||
-              rule.selectorText.includes("::-webkit-progress-value")
-            ) {
-              rule.style["background-color"] = color;
-            }
-          }
-        }
-      }
-
-      // private
-      function execProgressEndedCallbacks() {
-        Object.values(progressEndedCallbacks).forEach((cb) => {
-          cb();
-        });
-      }
-
-      // optionnal
-      function addProgressEndedCallback(callback) {
-        let newId;
-
-        do {
-          newId = crypto.randomUUID();
-        } while (progressEndedCallbacks.newId);
-
-        progressEndedCallbacks[newId] = callback;
-        return newId;
-      }
-
-      // optionnal
-      function removeProgressEndedCallback(callbackId) {
-        delete progressEndedCallbacks[callbackId];
-      }
-
-      function showAsker() {
-        const asker = getAsker();
-        asker.classList.remove("slid-down");
-      }
-
-      function hideAsker() {
-        const asker = getAsker();
-        asker.classList.add("slid-down");
-      }
-
-      function addQuestion(answerKey, answerLabel) {
-        if (typeof answerKey !== "string" || !answerKey.match(/^[a-zA-Z]$/i)) {
-          throw (
-            "when adding a question you must provide a single letter as the answer key\nyou provided: " +
-            answerKey
-          );
-        }
-
-        const templateQuestion = document.querySelector("#question-template");
-        const newQuestion =
-          templateQuestion.content.firstElementChild.cloneNode(true);
-        newQuestion.querySelector("label").innerText = answerLabel;
-
-        const btn = newQuestion.querySelector("button");
-        btn.dataset["answer"] = answerKey;
-        btn.innerText = answerKey.toUpperCase();
-        btn.addEventListener("click", () => answer(btn.dataset["answer"]));
-
-        document.querySelector("#choices").appendChild(newQuestion);
-      }
-
-      function removeQuestion(answerKey) {
-        const container = document.querySelector("#choices");
-        Array.from(container.children).forEach((child) => {
-          if (child.querySelector(`button[data-answer=${answerKey}]`)) {
-            child.remove();
-          }
-        });
-      }
-
-      function removeQuestionWithLabel(answerLabel) {
-        const container = document.querySelector("#choices");
-        Array.from(container.children).forEach((child) => {
-          if (child.querySelector("label").innerText.includes(answerLabel)) {
-            child.remove();
-          }
-        });
-      }
-
-      function clearQuestions() {
-        const container = document.querySelector("#choices");
-        Array.from(container.children).forEach((child) => child.remove());
-      }
-    </script>
+    <script src="yog.js"></script>
     <script src="userScript.js"></script>
   </body>
 </html>
