@@ -35,8 +35,12 @@ function answer(answerKey) {
   }
 }
 
+function getCurrentVid() {
+  return document.querySelector(`video[src="${currentVidSrc}"]`);
+}
+
 function playVid(vidSrc) {
-  const currentVid = document.querySelector(`video[src="${currentVidSrc}"]`);
+  const currentVid = getCurrentVid();
   const newVid = document.querySelector(`video[src="${vidSrc}"]`);
 
   if (!newVid) {
@@ -184,6 +188,21 @@ function clearQuestions() {
 function showAsker() {
   const asker = getAsker();
   asker.classList.remove("slid-down");
+}
+
+function registerAsker(timeFromEnd) {
+  const currentVid = getCurrentVid();
+
+  function handleVideoProgress(progressEvent) {
+    const target = progressEvent.target;
+    if (target.duration - target.currentTime < timeFromEnd * 0.001) {
+      showAsker();
+      startProgress(timeFromEnd);
+      currentVid.removeEventListener("progress", handleVideoProgress);
+    }
+  }
+
+  currentVid.addEventListener("timeupdate", handleVideoProgress);
 }
 
 function wait(time) {

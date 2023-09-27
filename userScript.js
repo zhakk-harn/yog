@@ -12,6 +12,7 @@ addQuestion("b", "get out!");
 addQuestion("c", "easy, take the nuyens");
 
 playVid("/assets/FxVsTFmaEAEqiEp.mp4");
+registerAsker(200);
 
 // answerKey is always lowercase
 function onAnswer(answerKey) {
@@ -20,12 +21,7 @@ function onAnswer(answerKey) {
   lattestAnswer = answerKey;
 }
 
-async function onVideoEnded(_vidSrc) {
-  await wait(1000);
-
-  showAsker();
-  startProgress(2000); // 5000ms
-
+function onVideoEnded(_vidSrc) {
   if (lattestAnswer) {
     if (lattestAnswer == "a") {
       playVid("/assets/FxVsTFmaEAEqiEp.mp4");
