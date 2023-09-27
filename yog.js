@@ -115,6 +115,7 @@ function setProgressColor(color) {
 // private
 function execProgressEndedCallbacks() {
   Object.values(progressEndedCallbacks).forEach((cb) => {
+    // TODO add video name to the callback or something to help them know which video ended
     cb();
   });
 }
