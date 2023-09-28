@@ -5,12 +5,14 @@
   "main": "index.js",
   "scripts": {
     "deploy": "wrangler pages deploy . --project-name yog",
+    "docs": "jsdoc yog.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "jsdoc": "^4.0.2",
     "wrangler": "^3.6.0"
   }
 }

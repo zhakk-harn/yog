@@ -12,6 +12,10 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
+/**
+ * Create a video in the system
+ * @param {string} vidSrc - the URI path of the video file
+ */
 function registerVid(vidSrc) {
   let newVid = document.createElement("video");
   newVid.src = vidSrc;
@@ -40,6 +44,10 @@ function getCurrentVid() {
   return document.querySelector(`video[src="${currentVidSrc}"]`);
 }
 
+/**
+ * Launch the playback of a video based on its source path
+ * @param {string} vidSrc the URI path of the video file
+ */
 function playVid(vidSrc) {
   const currentVid = getCurrentVid();
   const newVid = document.querySelector(`video[src="${vidSrc}"]`);
@@ -65,6 +73,10 @@ function getAsker() {
   return document.querySelector("#asker");
 }
 
+/**
+ * Start the progress bar and make it progress for totalTime amount of milliseconds
+ * @param {number} totalTime - Time in milliseconds
+ */
 function startProgress(totalTime) {
   let startTime;
   const progressEl = getProgressEl();
@@ -92,12 +104,19 @@ function startProgress(totalTime) {
   }
 }
 
+/**
+ * stops the progress bar
+ */
 function cancelProgress() {
   const progressEl = getProgressEl();
   progressTicking = false;
   progressEl.value = 0;
 }
 
+/**
+ * Change the color of the progress bar
+ * @param {string} color - the new color for the progress bar, provided in a CSS compliant format
+ */
 function setProgressColor(color) {
   // TODO : make a separate stylesheet at runtime with a title, only for this
   // instead of doing a shitty nested loop running over all the styles
@@ -122,7 +141,11 @@ function execProgressEndedCallbacks() {
   });
 }
 
-// optionnal
+/**
+ * Register a function to be executed when the progress finishes
+ * @param {function} callback - function to execute when the progress reach the end.
+ * @returns the id of the callback, which you'll have to provide if you want to remove that callback.
+ */
 function addProgressEndedCallback(callback) {
   let newId;
 
@@ -134,16 +157,27 @@ function addProgressEndedCallback(callback) {
   return newId;
 }
 
-// optionnal
+/**
+ * Provide the UUID given by addProgressEndedCallback to stop a particular callback from firing.
+ * @param {string} callbackId - a uuid
+ */
 function removeProgressEndedCallback(callbackId) {
   delete progressEndedCallbacks[callbackId];
 }
 
+/**
+ * Hides the element holding the questions.
+ */
 function hideAsker() {
   const asker = getAsker();
   asker.classList.add("slid-down");
 }
 
+/**
+ * Adds a question to the asker element.
+ * @param {string} answerKey - a single character representing the key to press to answer
+ * @param {string} answerLabel - the text representing the question
+ */
 function addQuestion(answerKey, answerLabel) {
   if (typeof answerKey !== "string" || !answerKey.match(/^[a-zA-Z]$/i)) {
     throw (
@@ -165,6 +199,10 @@ function addQuestion(answerKey, answerLabel) {
   document.querySelector("#choices").appendChild(newQuestion);
 }
 
+/**
+ * Remove a question form the asker element based on the answerKey.
+ * @param {string} answerKey - a single character representing the key to press to answer
+ */
 function removeQuestion(answerKey) {
   const container = document.querySelector("#choices");
   Array.from(container.children).forEach((child) => {
@@ -174,6 +212,10 @@ function removeQuestion(answerKey) {
   });
 }
 
+/**
+ * Remove a question form the asker element based on the label.
+ * @param {string} answerLabel - the text representing the question
+ */
 function removeQuestionWithLabel(answerLabel) {
   const container = document.querySelector("#choices");
   Array.from(container.children).forEach((child) => {
@@ -183,16 +225,26 @@ function removeQuestionWithLabel(answerLabel) {
   });
 }
 
+/**
+ * Remove all the questions from the asker.
+ */
 function clearQuestions() {
   const container = document.querySelector("#choices");
   Array.from(container.children).forEach((child) => child.remove());
 }
 
+/**
+ * Show the asker element.
+ */
 function showAsker() {
   const asker = getAsker();
   asker.classList.remove("slid-down");
 }
 
+/**
+ * Shows the asker some amount of time before the end of the currently playing video.
+ * @param {number} timeFromEnd - time in milliseconds from the end of the video from which we need to start showing the asker
+ */
 function registerAsker(timeFromEnd) {
   const currentVid = getCurrentVid();
 
@@ -208,6 +260,11 @@ function registerAsker(timeFromEnd) {
   currentVid.addEventListener("timeupdate", handleVideoProgress);
 }
 
+/**
+ * Helper function to stop your code for some amount of time. Only works inside async functions.
+ * @param {milliseconds} time
+ * @returns empty Promise
+ */
 function wait(time) {
   return new Promise((resolve) => {
     setTimeout(() => {
