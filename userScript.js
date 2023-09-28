@@ -21,7 +21,7 @@ function onAnswer(answerKey) {
   lattestAnswer = answerKey;
 }
 
-function onVideoEnded(_vidSrc) {
+function onVideoEnded(_vidName) {
   if (lattestAnswer) {
     if (lattestAnswer == "a") {
       playVid("/assets/FxVsTFmaEAEqiEp.mp4");
@@ -37,6 +37,6 @@ function onVideoEnded(_vidSrc) {
   }
 }
 
-function onProgressEnded() {
+function onProgressEnded(_vidName) {
   hideAsker();
 }

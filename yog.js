@@ -20,7 +20,8 @@ function registerVid(vidSrc) {
 
   newVid.addEventListener("ended", () => {
     if (typeof onVideoEnded === "function") {
-      onVideoEnded(vidSrc);
+      const vidShortName = vidSrc.split("/").pop();
+      onVideoEnded(vidShortName);
     }
   });
 
@@ -114,9 +115,10 @@ function setProgressColor(color) {
 
 // private
 function execProgressEndedCallbacks() {
+  const vidShortName = currentVidSrc.split("/").pop();
   Object.values(progressEndedCallbacks).forEach((cb) => {
     // TODO add video name to the callback or something to help them know which video ended
-    cb();
+    cb(vidShortName);
   });
 }
 
