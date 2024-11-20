@@ -78,6 +78,10 @@ function getAsker() {
  * @param {number} totalTime - Time in milliseconds
  */
 function startProgress(totalTime) {
+  if (progressTicking) {
+    return;
+  }
+
   let startTime;
   const progressEl = getProgressEl();
   progressTicking = true;
