@@ -89,12 +89,16 @@ function startProgress(totalTime) {
   requestAnimationFrame(progress);
 
   function progress(timeStamp) {
+    if (!progressTicking) {
+      return;
+    }
+
     if (startTime === undefined) {
       startTime = timeStamp;
     }
     const elapsed = timeStamp - startTime;
 
-    if (progressTicking && elapsed < totalTime) {
+    if (elapsed < totalTime) {
       progressEl.value = (elapsed / totalTime) * 100;
       requestAnimationFrame(progress);
     } else if (progressTicking) {
@@ -252,9 +256,12 @@ function showAsker() {
 function registerAsker(timeFromEnd) {
   const currentVid = getCurrentVid();
 
+  let shown = false;
+
   function handleVideoProgress(progressEvent) {
     const target = progressEvent.target;
-    if (target.duration - target.currentTime < timeFromEnd * 0.001) {
+    if (target.duration - target.currentTime < timeFromEnd * 0.001 && !shown) {
+      shown = true;
       showAsker();
       startProgress(timeFromEnd);
       currentVid.removeEventListener("progress", handleVideoProgress);
